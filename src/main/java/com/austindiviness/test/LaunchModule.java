@@ -2,10 +2,7 @@ package com.austindiviness.test;
 
 import edu.mines.acmX.exhibit.input_services.events.EventManager;
 import edu.mines.acmX.exhibit.input_services.events.EventType;
-import edu.mines.acmX.exhibit.input_services.hardware.BadFunctionalityRequestException;
-import edu.mines.acmX.exhibit.input_services.hardware.HardwareManager;
-import edu.mines.acmX.exhibit.input_services.hardware.HardwareManagerManifestException;
-import edu.mines.acmX.exhibit.input_services.hardware.UnknownDriverRequest;
+import edu.mines.acmX.exhibit.input_services.hardware.*;
 import edu.mines.acmX.exhibit.input_services.hardware.devicedata.HandTrackerInterface;
 import edu.mines.acmX.exhibit.input_services.hardware.drivers.InvalidConfigurationFileException;
 import edu.mines.acmX.exhibit.module_management.modules.ProcessingModule;
@@ -13,11 +10,12 @@ import edu.mines.acmX.exhibit.stdlib.graphics.Coordinate3D;
 import edu.mines.acmX.exhibit.stdlib.graphics.HandPosition;
 import edu.mines.acmX.exhibit.stdlib.input_processing.receivers.HandReceiver;
 
+import java.rmi.RemoteException;
+
 public class LaunchModule extends ProcessingModule {
 
 	//time (in ms) to wait before closing
 	public static final int COUNTDOWN = 15000;
-	private static HardwareManager hwMgr;
 	private static EventManager evtMgr;
 	
 	private HandTrackerInterface driver;
@@ -39,24 +37,23 @@ public class LaunchModule extends ProcessingModule {
 		noCursor();
 		// smooth();
 		timeLostHand = -1;
-		try {
-			hwMgr = HardwareManager.getInstance();
-		} catch (HardwareManagerManifestException e) {
-			e.printStackTrace();
-		}
 		
 		try {
 			
-			driver = (HandTrackerInterface) hwMgr.getInitialDriver("handtracking");
+			driver = (HandTrackerInterface) getInitialDriver("handtracking");
 			
 		} catch (BadFunctionalityRequestException | InvalidConfigurationFileException e) {
 			e.printStackTrace();
 		} catch (UnknownDriverRequest e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		}
-		
-		evtMgr = EventManager.getInstance();
+		} catch (RemoteException e) {
+            e.printStackTrace();
+        } catch (BadDeviceFunctionalityRequestException e) {
+            e.printStackTrace();
+        }
+
+        evtMgr = EventManager.getInstance();
 		
 		receiver = new MyHandReceiver();
 		
